@@ -1,0 +1,35 @@
+{
+  "name": "vanix-website",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test:db": "node scripts/test-connection.mjs"
+  },
+  "dependencies": {
+    "@gsap/react": "^2.1.1",
+    "@supabase/supabase-js": "^2.115.0",
+    "clsx": "^2.1.1",
+    "gsap": "^3.12.5",
+    "jose": "^6.2.10",
+    "lucide-react": "^1.16.0",
+    "next": "^15.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "resend": "^6.26.0",
+    "tailwind-merge": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.1",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.4",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3"
+  }
+}

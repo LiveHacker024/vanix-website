@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:db": "node scripts/test-connection.mjs"
+    "test:db": "node scripts/test-connection.mjs",
+    "test:auth": "node scripts/test-auth-hardening.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.1",

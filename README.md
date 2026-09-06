@@ -59,7 +59,7 @@ A production-ready, zero-loss lead capture, qualification, and automated multi-c
    - Subscribe to the `messages` webhook field.
 
 ### 4. Admin Authentication
-1. Set `ADMIN_EMAIL=admin@vanix.in` and `ADMIN_PASSWORD=...`.
+1. Set `ADMIN_EMAIL=your-admin-email@domain.com` and `ADMIN_PASSWORD=your_secure_password_here`.
 2. Generate a secure random string for `ADMIN_SECRET` (min 32 characters).
 
 ---

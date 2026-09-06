@@ -1,11 +1,15 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import crypto from "crypto";
 
 // Rate limiting in-memory store (sliding window)
 const rateLimitMap = new Map<string, { count: number; firstSeen: number }>();
 const duplicateCheckMap = new Map<string, number>();
 
-// Clean up stale rate limits every 10 minutes
+// Admin login brute force tracking (sliding window: 15 min, max 5 failed attempts)
+const adminLoginAttemptsMap = new Map<string, { count: number; firstSeen: number }>();
+
+// Clean up stale rate limits every 5 minutes
 setInterval(() => {
   const now = Date.now();
   for (const [key, val] of rateLimitMap.entries()) {
@@ -18,7 +22,22 @@ setInterval(() => {
       duplicateCheckMap.delete(key);
     }
   }
+  for (const [key, val] of adminLoginAttemptsMap.entries()) {
+    if (now - val.firstSeen > 15 * 60 * 1000) {
+      adminLoginAttemptsMap.delete(key);
+    }
+  }
 }, 5 * 60 * 1000);
+
+/**
+ * Timing-safe string comparison using SHA-256 digests to prevent timing attacks.
+ */
+export function safeCompare(a: string, b: string): boolean {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  const hashA = crypto.createHash("sha256").update(a).digest();
+  const hashB = crypto.createHash("sha256").update(b).digest();
+  return crypto.timingSafeEqual(hashA, hashB);
+}
 
 /**
  * Sanitize string inputs to strip HTML tags and avoid injection attacks.
@@ -50,7 +69,7 @@ export function validatePhone(phone: string): boolean {
 }
 
 /**
- * Basic in-memory rate limiting per IP address (max 5 requests per 5 minutes).
+ * Basic in-memory rate limiting per IP address for public leads (max 10 requests per 5 minutes).
  */
 export function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
   const now = Date.now();
@@ -74,6 +93,50 @@ export function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: num
 }
 
 /**
+ * Brute-force protection for admin login: max 5 failed attempts per 15 minutes per IP.
+ */
+export function checkAdminLoginRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const windowMs = 15 * 60 * 1000; // 15 minutes
+  const maxFailedAttempts = 5;
+
+  const current = adminLoginAttemptsMap.get(ip);
+  if (!current || now - current.firstSeen > windowMs) {
+    return { allowed: true };
+  }
+
+  if (current.count >= maxFailedAttempts) {
+    const retryAfter = Math.ceil((current.firstSeen + windowMs - now) / 1000);
+    return { allowed: false, retryAfter };
+  }
+
+  return { allowed: true };
+}
+
+/**
+ * Record a failed admin login attempt for rate limiting.
+ */
+export function recordFailedLoginAttempt(ip: string): void {
+  const now = Date.now();
+  const windowMs = 15 * 60 * 1000;
+  const current = adminLoginAttemptsMap.get(ip);
+
+  if (!current || now - current.firstSeen > windowMs) {
+    adminLoginAttemptsMap.set(ip, { count: 1, firstSeen: now });
+  } else {
+    current.count += 1;
+    adminLoginAttemptsMap.set(ip, current);
+  }
+}
+
+/**
+ * Reset failed admin login attempts on successful login.
+ */
+export function resetLoginAttempts(ip: string): void {
+  adminLoginAttemptsMap.delete(ip);
+}
+
+/**
  * Detect rapid duplicate submissions (within 15 seconds) with same phone or email.
  */
 export function isDuplicateSubmission(phone: string, email?: string): boolean {
@@ -89,23 +152,38 @@ export function isDuplicateSubmission(phone: string, email?: string): boolean {
   return false;
 }
 
-// Secret key for JWT sessions
-const getAdminSecret = () => {
-  const secret = process.env.ADMIN_SECRET || "vanix_production_default_secret_key_change_in_env_2026";
+/**
+ * Retrieve the strictly verified server-side ADMIN_SECRET key.
+ * Requires minimum 32 characters; fails safely without default fallback.
+ */
+export function getAdminSecret(): Uint8Array | null {
+  const secret = process.env.ADMIN_SECRET?.trim();
+  if (!secret || secret.length < 32) {
+    console.error(
+      "[Security Configuration Error]: ADMIN_SECRET is missing or less than 32 characters in server environment."
+    );
+    return null;
+  }
   return new TextEncoder().encode(secret);
-};
+}
 
 export const ADMIN_COOKIE_NAME = "vanix_admin_session";
 
 /**
- * Create a signed JWT admin session token (valid for 7 days).
+ * Create a signed HS256 JWT admin session token (valid for 7 days).
  */
-export async function createAdminSession(email: string): Promise<string> {
-  const token = await new SignJWT({ email, role: "admin" })
+export async function createAdminSession(email: string): Promise<string | null> {
+  const secret = getAdminSecret();
+  if (!secret) return null;
+  if (!email || typeof email !== "string" || !validateEmail(email)) {
+    return null;
+  }
+
+  const token = await new SignJWT({ email: email.trim().toLowerCase(), role: "admin" })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
-    .sign(getAdminSecret());
+    .sign(secret);
 
   return token;
 }
@@ -113,11 +191,31 @@ export async function createAdminSession(email: string): Promise<string> {
 /**
  * Verify JWT token and return session payload if valid.
  */
-export async function verifyAdminSession(token: string) {
+export async function verifyAdminSession(
+  token: string
+): Promise<{ email: string; role: "admin" } | null> {
+  if (!token || typeof token !== "string") return null;
+  const secret = getAdminSecret();
+  if (!secret) return null;
+
   try {
-    const { payload } = await jwtVerify(token, getAdminSecret());
-    return payload as { email: string; role: string };
-  } catch (error) {
+    const { payload } = await jwtVerify(token, secret, {
+      algorithms: ["HS256"],
+    });
+
+    if (
+      payload.role !== "admin" ||
+      typeof payload.email !== "string" ||
+      !payload.email.trim()
+    ) {
+      return null;
+    }
+
+    return {
+      email: payload.email.trim().toLowerCase(),
+      role: "admin",
+    };
+  } catch {
     return null;
   }
 }
@@ -125,9 +223,13 @@ export async function verifyAdminSession(token: string) {
 /**
  * Helper to check current admin authentication from Next.js server cookie.
  */
-export async function getAuthenticatedAdmin() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
-  if (!token) return null;
-  return await verifyAdminSession(token);
+export async function getAuthenticatedAdmin(): Promise<{ email: string; role: "admin" } | null> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+    if (!token) return null;
+    return await verifyAdminSession(token);
+  } catch {
+    return null;
+  }
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { VanixLogo } from "@/components/ui/VanixLogo";
-import { Lock, Mail, Loader2, AlertCircle, Sparkles, ShieldCheck } from "lucide-react";
+import { Lock, Mail, Loader2, AlertCircle, ShieldCheck } from "lucide-react";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -11,6 +11,27 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    let isMounted = true;
+    async function checkExistingAuth() {
+      try {
+        const res = await fetch("/api/admin/auth/me");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.authenticated && data.user && isMounted) {
+          router.replace("/admin/leads");
+        }
+      } catch {
+        // Unauthenticated - stay on login
+      }
+    }
+    checkExistingAuth();
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +110,7 @@ export default function AdminLoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@vanix.in"
+                  placeholder="name@vanix.in"
                   className="w-full pl-10 pr-4 py-3 rounded-lg bg-surface-3 border border-white/10 text-sm text-white placeholder-text-dark focus:outline-none focus:border-gold transition-colors"
                 />
               </div>
@@ -142,3 +163,4 @@ export default function AdminLoginPage() {
     </div>
   );
 }
+

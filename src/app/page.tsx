@@ -4,6 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
 import { HeroSection } from "@/components/sections/HeroSection";
+import { SocialProofSection } from "@/components/sections/SocialProofSection";
 import { TransformationSection } from "@/components/sections/TransformationSection";
 import { GrowthJourneySection } from "@/components/sections/GrowthJourneySection";
 import { ServicesSection } from "@/components/sections/ServicesSection";
@@ -25,6 +26,9 @@ export default function HomePage() {
 
       {/* 01: Fullscreen Cinematic Hero (Animation 01) */}
       <HeroSection />
+
+      {/* 01.5: Modern Ultra-Premium Social Proof / Trusted By Partner Marquee */}
+      <SocialProofSection />
 
       {/* 02: Transformation Section (Offline to Online - Animation 02 + vanix-01.png) */}
       <TransformationSection />

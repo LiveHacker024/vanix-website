@@ -145,6 +145,49 @@
   animation: goldShimmer 4s infinite ease-in-out;
 }
 
+/* Marquee & Edge Fade Gradients */
+.marquee-mask {
+  mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.marquee-pause:hover .marquee-track {
+  animation-play-state: paused !important;
+}
+
+/* Partner Logo Cards */
+.partner-logo-card {
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 300ms ease, 
+              box-shadow 300ms ease, 
+              background-color 300ms ease;
+}
+
+.partner-logo-card:hover {
+  transform: translateY(-2px) scale(1.03);
+  border-color: rgba(200, 164, 93, 0.4);
+  box-shadow: 0 4px 20px -2px rgba(200, 164, 93, 0.12);
+}
+
+.partner-logo-image {
+  transition: filter 300ms ease, opacity 300ms ease, transform 300ms ease;
+  filter: grayscale(85%) brightness(0.85) contrast(1.05);
+  opacity: 0.72;
+}
+
+.partner-logo-card:hover .partner-logo-image {
+  filter: grayscale(0%) brightness(1.05) contrast(1.02);
+  opacity: 1;
+}
+
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
   *,

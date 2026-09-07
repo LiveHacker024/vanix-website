@@ -958,8 +958,8 @@ Please help me understand the next steps.`;
               )}
 
               {/* GLOBAL CALLS TO ACTION */}
-              <div className="p-6 sm:p-8 rounded-2xl bg-surface-2 border border-gold/30 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="space-y-2 text-center md:text-left">
+              <div className="p-6 sm:p-8 rounded-2xl bg-surface-2 border border-gold/30 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-6">
+                <div className="space-y-2 text-center lg:text-left">
                   <span className="text-xs font-bold uppercase tracking-widest text-gold">
                     READY TO COMMENCE YOUR DIGITAL SCALE?
                   </span>
@@ -971,23 +971,24 @@ Please help me understand the next steps.`;
                   </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-[14px] w-full lg:w-auto md:flex-wrap">
                   <button
                     type="button"
                     onClick={handleOpenInquiryPlan}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-gold-gradient text-black text-xs sm:text-sm font-extrabold uppercase tracking-widest shadow-xl shadow-gold/20 hover:scale-[1.02] active:scale-[0.98] transition-all border border-gold-bright flex-shrink-0"
+                    className="w-full md:w-auto h-[52px] inline-flex items-center justify-center gap-2 px-6 rounded-lg bg-gold-gradient text-black text-xs sm:text-sm font-extrabold uppercase tracking-widest shadow-xl shadow-gold/20 hover:scale-[1.02] active:scale-[0.98] transition-all border border-gold-bright flex-shrink-0 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-surface-2"
                   >
                     <span>Start This Growth Plan</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
                   </button>
 
                   <a
-                    href={getWhatsAppAssessmentUrl()}
+                    href="https://wa.me/919457727770?text=Hi%20VANIX%2C%20I%20want%20to%20discuss%20the%20digital%20growth%20plan%20for%20my%20business."
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-surface-3 hover:bg-surface-1 border border-gold/40 text-xs sm:text-sm font-bold uppercase tracking-wider text-gold hover:text-white transition-all flex-shrink-0"
+                    aria-label="Discuss digital growth plan with VANIX on WhatsApp"
+                    className="group w-full md:w-auto h-[52px] inline-flex items-center justify-center gap-2.5 px-6 rounded-lg bg-[#0d0d0d] hover:bg-gold/10 border border-[#d4af37]/45 hover:border-gold text-white text-xs sm:text-sm font-semibold tracking-[0.5px] uppercase shadow-md hover:shadow-[0_0_16px_rgba(212,175,55,0.2)] active:scale-[0.98] transition-all duration-300 flex-shrink-0 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-surface-2"
                   >
-                    <MessageCircle className="w-4 h-4 text-gold" />
+                    <MessageCircle className="w-4 h-4 text-emerald-400 group-hover:text-gold transition-colors flex-shrink-0" aria-hidden="true" />
                     <span>Discuss on WhatsApp</span>
                   </a>
                 </div>

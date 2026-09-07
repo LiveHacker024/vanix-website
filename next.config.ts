@@ -24,6 +24,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  output: "export",
   reactStrictMode: true,
   devIndicators: false,
   images: {

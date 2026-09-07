@@ -1,11 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { videoManifest } from "@/config/videos";
 import { GoldButton } from "@/components/ui/GoldButton";
+import { GrowthJourneyModal } from "@/components/ui/GrowthJourneyModal";
 import { ChevronDown, Sparkles } from "lucide-react";
 
 export function HeroSection() {
+  const [isJourneyModalOpen, setIsJourneyModalOpen] = useState(false);
+
   return (
     <section
       id="hero"
@@ -51,13 +54,24 @@ export function HeroSection() {
 
         {/* Action CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
-          <GoldButton href="#contact" size="lg" variant="primary" className="w-full sm:w-auto shadow-2xl">
+          <GoldButton
+            onClick={() => setIsJourneyModalOpen(true)}
+            size="lg"
+            variant="primary"
+            className="w-full sm:w-auto shadow-2xl"
+          >
             START YOUR GROWTH JOURNEY
           </GoldButton>
           <GoldButton href="#journey" size="lg" variant="secondary" className="w-full sm:w-auto" icon={false}>
             EXPLORE SERVICES
           </GoldButton>
         </div>
+
+        {/* Growth Journey Interactive Modal */}
+        <GrowthJourneyModal
+          isOpen={isJourneyModalOpen}
+          onClose={() => setIsJourneyModalOpen(false)}
+        />
 
         {/* Scroll Indicator */}
         <div className="mt-16 sm:mt-20 flex flex-col items-center gap-2 text-text-muted opacity-70 hover:opacity-100 transition-opacity">

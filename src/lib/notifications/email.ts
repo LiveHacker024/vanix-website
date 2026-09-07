@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { LeadRecord } from "../types";
 import { automationConfig } from "@/config/automation";
+import { siteConfig } from "@/config/site";
 
 let resendClient: Resend | null = null;
 const apiKey = process.env.RESEND_API_KEY;
@@ -17,7 +18,7 @@ export async function sendLeadNotificationEmail(
 ): Promise<{ success: boolean; error?: string }> {
   const recipientEmail = automationConfig.leadNotificationEmail;
   const fromEmail = automationConfig.senderEmail;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = siteConfig.url;
 
   if (!resendClient) {
     console.warn(`[Resend Email Skipped]: RESEND_API_KEY not configured for internal alert ${lead.id}.`);
@@ -296,7 +297,7 @@ export async function sendHumanHandoffEmail(
 ): Promise<{ success: boolean; error?: string }> {
   const recipientEmail = automationConfig.leadNotificationEmail;
   const fromEmail = automationConfig.senderEmail;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = siteConfig.url;
 
   if (!resendClient) {
     return { success: false, error: "RESEND_API_KEY not configured" };

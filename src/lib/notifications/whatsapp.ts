@@ -1,8 +1,9 @@
 import { LeadRecord } from "../types";
 import { automationConfig } from "@/config/automation";
+import { ServiceBookingRecord } from "../service-bookings";
 
 /**
- * 1. INTERNAL WHATSAPP ALERT (Sent to 919457727770)
+ * 1. INTERNAL WHATSAPP ALERT FOR LEADS (Sent to 919457727770)
  */
 export async function sendLeadNotificationWhatsApp(
   lead: LeadRecord
@@ -32,7 +33,73 @@ ${formattedDate}`;
 }
 
 /**
- * 2. CUSTOMER WHATSAPP AUTO-REPLY
+ * 2. INTERNAL WHATSAPP ALERT FOR SERVICE BOOKINGS (₹999 Flow)
+ */
+export async function sendServiceBookingNotificationWhatsApp(
+  booking: ServiceBookingRecord
+): Promise<{ success: boolean; error?: string }> {
+  const recipientNumber = automationConfig.leadNotificationWhatsApp;
+
+  const formattedDate = new Date(booking.created_at).toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+
+  const messageText = `🚀 *VANIX SERVICE BOOKING*
+
+New ₹999 Service Booking
+
+*Customer:*
+${booking.customer_name}
+
+*Business:*
+${booking.business_name}
+
+*Phone:*
+${booking.phone}
+
+*Email:*
+${booking.email || "Not Provided"}
+
+*Location:*
+${booking.location || "Not Provided"}
+
+*Service:*
+${booking.service_name}
+
+*Service Slug:*
+${booking.service_slug}
+
+*Amount:*
+₹${booking.amount}
+
+*Payment Status:*
+Payment Verification Pending
+
+*UPI ID:*
+${booking.upi_id}
+
+*UPI Transaction ID / UTR:*
+${booking.utr || "Not Submitted Yet"}
+
+*Booking Reference:*
+${booking.booking_reference}
+
+*Requirement:*
+${booking.customer_note || "No specific notes"}
+
+*Submitted At:*
+${formattedDate}
+
+*Source:*
+VANIX Website`;
+
+  return await sendCustomerWhatsAppMessage(recipientNumber, messageText);
+}
+
+/**
+ * 3. CUSTOMER WHATSAPP AUTO-REPLY
  */
 export async function sendCustomerAutoReplyWhatsApp(
   lead: LeadRecord
@@ -59,7 +126,7 @@ You can continue the conversation here if you have additional details to share.
 }
 
 /**
- * 3. HUMAN HANDOFF WHATSAPP ALERT
+ * 4. HUMAN HANDOFF WHATSAPP ALERT
  */
 export async function sendHumanHandoffWhatsApp(
   lead: LeadRecord,
@@ -82,7 +149,7 @@ ${summary}`;
 }
 
 /**
- * 4. DISPATCH WHATSAPP MESSAGE VIA OFFICIAL META CLOUD API
+ * 5. DISPATCH WHATSAPP MESSAGE VIA OFFICIAL META CLOUD API
  */
 export async function sendCustomerWhatsAppMessage(
   recipientPhone: string,

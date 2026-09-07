@@ -32,7 +32,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8 mb-16">
           {/* Col 1 & 2: Brand Info & Verified Contact Details */}
           <div className="lg:col-span-2 flex flex-col gap-5">
-            <VanixLogo size="md" showSubtitle={true} href="#hero" />
+            <VanixLogo size="md" showSubtitle={true} href="/" />
 
             <p className="text-sm text-text-secondary leading-relaxed max-w-sm font-light">
               VANIX transforms traditional and offline businesses into dominant digital growth engines through bespoke technology, marketplace scale, local search, and conversion systems.
@@ -102,7 +102,7 @@ export function Footer() {
               Navigation
             </h4>
             <ul className="flex flex-col gap-2.5 text-xs">
-              {siteConfig.navItems.slice(0, 5).map((item) => (
+              {siteConfig.navItems.slice(0, 6).map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}
@@ -122,32 +122,32 @@ export function Footer() {
             </h4>
             <ul className="flex flex-col gap-2.5 text-xs text-text-secondary">
               <li>
-                <Link href="#services" className="hover:text-white transition-colors">
+                <Link href="/services/website-development" className="hover:text-white transition-colors">
                   Custom Web Architecture
                 </Link>
               </li>
               <li>
-                <Link href="#services" className="hover:text-white transition-colors">
+                <Link href="/services/ecommerce-website" className="hover:text-white transition-colors">
                   E-Commerce Systems
                 </Link>
               </li>
               <li>
-                <Link href="#services" className="hover:text-white transition-colors">
+                <Link href="/services/amazon-meesho-indiamart" className="hover:text-white transition-colors">
                   Amazon & IndiaMART
                 </Link>
               </li>
               <li>
-                <Link href="#services" className="hover:text-white transition-colors">
+                <Link href="/services/google-business-profile" className="hover:text-white transition-colors">
                   Google Maps 3-Pack SEO
                 </Link>
               </li>
               <li>
-                <Link href="#services" className="hover:text-white transition-colors">
+                <Link href="/services/whatsapp-sales-commerce" className="hover:text-white transition-colors">
                   WhatsApp Commerce Funnels
                 </Link>
               </li>
               <li>
-                <Link href="#services" className="hover:text-white transition-colors">
+                <Link href="/services/analytics-growth-reporting" className="hover:text-white transition-colors">
                   Analytics & Scaling
                 </Link>
               </li>

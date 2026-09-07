@@ -18,20 +18,24 @@ interface ServiceInquiryModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialService?: string;
+  initialBusinessName?: string;
+  initialMessage?: string;
 }
 
 export function ServiceInquiryModal({
   isOpen,
   onClose,
   initialService,
+  initialBusinessName,
+  initialMessage,
 }: ServiceInquiryModalProps) {
   const [formData, setFormData] = useState({
     name: "",
-    businessName: "",
+    businessName: initialBusinessName || "",
     phone: "",
     email: "",
     service: initialService || servicesData[0].title,
-    message: "",
+    message: initialMessage || "",
     honeypot: "",
   });
 
@@ -43,7 +47,13 @@ export function ServiceInquiryModal({
     if (initialService) {
       setFormData((prev) => ({ ...prev, service: initialService }));
     }
-  }, [initialService]);
+    if (initialBusinessName) {
+      setFormData((prev) => ({ ...prev, businessName: initialBusinessName }));
+    }
+    if (initialMessage) {
+      setFormData((prev) => ({ ...prev, message: initialMessage }));
+    }
+  }, [initialService, initialBusinessName, initialMessage]);
 
   // Close on Escape
   useEffect(() => {

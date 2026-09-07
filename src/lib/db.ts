@@ -33,10 +33,12 @@ import path from "path";
 // ----------------------------------------------------------------------------
 
 function getCleanSupabaseUrl(): string | null {
-  let url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  let url =
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.SUPABASE_URL;
   const projectId = process.env.SUPABASE_PROJECT_ID;
 
-  if (!url && projectId) {
+  if (!url && projectId && projectId.trim() && !projectId.includes("your-project")) {
     url = `https://${projectId.trim()}.supabase.co`;
   }
 
@@ -55,9 +57,12 @@ function getCleanSupabaseUrl(): string | null {
 function getSupabaseKey(): string | null {
   const key =
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVICE_KEY ||
+    process.env.SUPABASE_SECRET_KEY ||
     process.env.SUPABASE_API_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    process.env.SUPABASE_ANON_KEY;
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_KEY;
 
   if (!key || key.includes("your_supabase") || key.length < 10) {
     return null;
@@ -70,27 +75,39 @@ function getSupabaseKey(): string | null {
   return key.trim();
 }
 
-export let supabase: SupabaseClient | null = null;
+let cachedSupabase: SupabaseClient | null = null;
+let cachedKey: string | null = null;
+let cachedUrl: string | null = null;
 
-const supabaseUrl = getCleanSupabaseUrl();
-const supabaseKey = getSupabaseKey();
+export function getSupabaseClient(): SupabaseClient | null {
+  const url = getCleanSupabaseUrl();
+  const key = getSupabaseKey();
 
-if (supabaseUrl && supabaseKey) {
+  if (!url || !key) {
+    return null;
+  }
+
+  if (cachedSupabase && cachedUrl === url && cachedKey === key) {
+    return cachedSupabase;
+  }
+
   try {
-    supabase = createClient(supabaseUrl, supabaseKey, {
+    cachedSupabase = createClient(url, key, {
       auth: {
         persistSession: false,
         autoRefreshToken: false,
       },
     });
-    console.log(`[Supabase DB]: Successfully initialized client with endpoint: ${supabaseUrl}`);
+    cachedUrl = url;
+    cachedKey = key;
+    return cachedSupabase;
   } catch (initErr) {
     console.error("[Supabase DB]: Initialization error:", initErr);
-    supabase = null;
+    return null;
   }
-} else {
-  console.log("[Supabase DB]: Supabase not configured. Using local JSON buffer storage.");
 }
+
+export let supabase: SupabaseClient | null = getSupabaseClient();
 
 // ----------------------------------------------------------------------------
 // Resilient Fallback Storage (Offline / Dev Buffer)
@@ -219,12 +236,14 @@ export async function logActivity(input: {
     created_at: new Date().toISOString(),
   };
 
-  if (supabase) {
+  const client = getSupabaseClient();
+  if (client) {
     try {
-      const { data, error } = await supabase.from("activity_logs").insert([record]).select().single();
+      const { data, error } = await client.from("activity_logs").insert([record]).select().single();
       if (!error && data) return data as ActivityLogRecord;
+      if (error) console.warn("[Supabase logActivity Error]:", error.message || error);
     } catch (err) {
-      console.warn("[Supabase logActivity]:", err);
+      console.warn("[Supabase logActivity Exception]:", err);
     }
   }
 
@@ -250,12 +269,14 @@ export async function createNotification(input: {
     created_at: new Date().toISOString(),
   };
 
-  if (supabase) {
+  const client = getSupabaseClient();
+  if (client) {
     try {
-      const { data, error } = await supabase.from("crm_notifications").insert([record]).select().single();
+      const { data, error } = await client.from("crm_notifications").insert([record]).select().single();
       if (!error && data) return data as CRMNotificationRecord;
+      if (error) console.warn("[Supabase createNotification Error]:", error.message || error);
     } catch (err) {
-      console.warn("[Supabase createNotification]:", err);
+      console.warn("[Supabase createNotification Exception]:", err);
     }
   }
 
@@ -296,9 +317,6 @@ export async function createInquiry(input: CreateInquiryInput): Promise<InquiryR
     ip_address: input.ip_address || null,
     status: input.status || "NEW",
     notes: input.notes || "",
-    customer_id: null,
-    last_contact_at: null,
-    next_followup_at: null,
     email_notification_status: "PENDING",
     customer_email_status: "PENDING",
     whatsapp_notification_status: "PENDING",
@@ -319,30 +337,50 @@ export async function createInquiry(input: CreateInquiryInput): Promise<InquiryR
     updated_at: now,
   };
 
-  if (supabase) {
-    try {
-      const { data, error } = await supabase.from("leads").insert([record]).select().single();
-      if (!error && data) {
-        await logActivity({
-          inquiry_id: id,
-          action: "INQUIRY_CREATED",
-          description: `New inquiry received from ${record.name} (${record.service})`,
-          actor: "Website",
-        });
-        await createNotification({
-          type: "NEW_INQUIRY",
-          title: "New Inquiry Received",
-          message: `${record.name} inquired for ${record.service}`,
-          link: `/admin/inquiries/${id}`,
-        });
-        return data as InquiryRecord;
-      }
-      console.error("[Supabase createInquiry Error]:", error);
-    } catch (err) {
-      console.error("[Supabase createInquiry Exception]:", err);
+  const client = getSupabaseClient();
+  if (client) {
+    const { data, error } = await client.from("leads").insert([record]).select().single();
+    if (error) {
+      console.error("[Supabase createInquiry Error]:", error.message || error);
+      throw new Error(`Failed to save inquiry to database: ${error.message || "Database insert error"}`);
     }
+    if (!data) {
+      throw new Error("Failed to save inquiry to database: No record returned from Supabase insert");
+    }
+
+    try {
+      await logActivity({
+        inquiry_id: id,
+        action: "INQUIRY_CREATED",
+        description: `New inquiry received from ${record.name} (${record.service})`,
+        actor: "Website",
+      });
+      await createNotification({
+        type: "NEW_INQUIRY",
+        title: "New Inquiry Received",
+        message: `${record.name} inquired for ${record.service}`,
+        link: `/admin/inquiries/${id}`,
+      });
+    } catch (activityErr) {
+      console.warn("[CRM Activity Log Warning]:", activityErr);
+    }
+
+    return data as InquiryRecord;
   }
 
+  // If Supabase client is not available
+  const isProduction =
+    process.env.NODE_ENV === "production" ||
+    !!process.env.VERCEL ||
+    !!process.env.NETLIFY;
+
+  if (isProduction) {
+    console.error("[Supabase DB Error]: Supabase database is not configured. Missing NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.");
+    throw new Error("Database service is unavailable. Supabase environment variables are missing.");
+  }
+
+  // Local development fallback only when running offline without Supabase configured
+  console.warn("[DB Warning]: Supabase not configured. Saving inquiry to local fallback storage.");
   const store = getFallbackStore();
   store.leads.unshift(record);
   saveFallbackStore(store);
@@ -375,9 +413,11 @@ export async function getInquiries(filters: InquiryFilterParams = {}): Promise<{
     limit = 20,
   } = filters;
 
+  const supabase = getSupabaseClient();
+
   if (supabase) {
     try {
-      let query = supabase.from("leads").select("*, customer:customers(*)", { count: "exact" });
+      let query = supabase.from("leads").select("*", { count: "exact" });
 
       if (status && status !== "ALL") {
         query = query.eq("status", status);
@@ -397,7 +437,12 @@ export async function getInquiries(filters: InquiryFilterParams = {}): Promise<{
 
       if (search.trim()) {
         const s = `%${search.trim()}%`;
-        query = query.or(`name.ilike.${s},company.ilike.${s},phone.ilike.${s},email.ilike.${s},message.ilike.${s}`);
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(search.trim());
+        if (isUUID) {
+          query = query.or(`id.eq.${search.trim()},name.ilike.${s},company.ilike.${s},phone.ilike.${s},email.ilike.${s}`);
+        } else {
+          query = query.or(`name.ilike.${s},company.ilike.${s},phone.ilike.${s},email.ilike.${s},message.ilike.${s}`);
+        }
       }
 
       if (startDate && endDate) {
@@ -468,9 +513,10 @@ export async function getLeads(filters: LeadFilterParams = {}) {
 }
 
 export async function getInquiryById(id: string): Promise<InquiryRecord | null> {
+  const supabase = getSupabaseClient();
   if (supabase) {
     try {
-      const { data, error } = await supabase.from("leads").select("*, customer:customers(*)").eq("id", id).single();
+      const { data, error } = await supabase.from("leads").select("*").eq("id", id).single();
       if (!error && data) return data as InquiryRecord;
     } catch (err) {
       console.error("[Supabase getInquiryById Exception]:", err);
@@ -489,6 +535,8 @@ export async function updateInquiry(id: string, updates: Partial<InquiryRecord>)
     ...updates,
     updated_at: new Date().toISOString(),
   };
+
+  const supabase = getSupabaseClient();
 
   if (supabase) {
     try {
@@ -523,6 +571,7 @@ export async function updateInquiry(id: string, updates: Partial<InquiryRecord>)
 export const updateLead = updateInquiry;
 
 export async function deleteInquiry(id: string): Promise<boolean> {
+  const supabase = getSupabaseClient();
   if (supabase) {
     try {
       const { error } = await supabase.from("leads").delete().eq("id", id);
@@ -615,6 +664,8 @@ export async function createCustomer(input: CreateCustomerInput): Promise<Custom
     updated_at: now,
   };
 
+  const supabase = getSupabaseClient();
+
   if (supabase) {
     try {
       const { data, error } = await supabase.from("customers").insert([record]).select().single();
@@ -647,6 +698,8 @@ export async function createCustomer(input: CreateCustomerInput): Promise<Custom
 
 export async function getCustomers(filters: CustomerFilterParams = {}): Promise<{ customers: CustomerRecord[]; total: number }> {
   const { search = "", status = "ALL", sortBy = "newest", page = 1, limit = 20 } = filters;
+
+  const supabase = getSupabaseClient();
 
   if (supabase) {
     try {
@@ -705,6 +758,7 @@ export async function getCustomers(filters: CustomerFilterParams = {}): Promise<
 }
 
 export async function getCustomerById(id: string): Promise<CustomerRecord | null> {
+  const supabase = getSupabaseClient();
   if (supabase) {
     try {
       const { data, error } = await supabase.from("customers").select("*, inquiries:leads(*), payments(*), follow_ups(*)").eq("id", id).single();
@@ -732,6 +786,8 @@ export async function updateCustomer(id: string, updates: Partial<CustomerRecord
     updated_at: new Date().toISOString(),
   };
 
+  const supabase = getSupabaseClient();
+
   if (supabase) {
     try {
       const { data, error } = await supabase.from("customers").update(updatedData).eq("id", id).select().single();
@@ -752,6 +808,7 @@ export async function updateCustomer(id: string, updates: Partial<CustomerRecord
 }
 
 export async function deleteCustomer(id: string): Promise<boolean> {
+  const supabase = getSupabaseClient();
   if (supabase) {
     try {
       const { error } = await supabase.from("customers").delete().eq("id", id);
@@ -789,6 +846,8 @@ export async function scheduleFollowUp(input: ScheduleFollowUpInput): Promise<Fo
     created_at: now,
     updated_at: now,
   };
+
+  const supabase = getSupabaseClient();
 
   if (supabase) {
     try {
@@ -830,6 +889,8 @@ export async function scheduleFollowUp(input: ScheduleFollowUpInput): Promise<Fo
 
 export async function getFollowUps(filters: FollowUpFilterParams = {}): Promise<FollowUpRecord[]> {
   const { tab = "all", inquiry_id, customer_id, status } = filters;
+
+  const supabase = getSupabaseClient();
 
   if (supabase) {
     try {
@@ -893,6 +954,8 @@ export async function updateFollowUp(id: string, updates: Partial<FollowUpRecord
     ...(updates.status === "COMPLETED" ? { completed_at: new Date().toISOString() } : {}),
   };
 
+  const supabase = getSupabaseClient();
+
   if (supabase) {
     try {
       const { data, error } = await supabase.from("follow_ups").update(updatedData).eq("id", id).select().single();
@@ -945,6 +1008,8 @@ export async function recordPayment(input: RecordPaymentInput): Promise<PaymentR
     created_at: now,
     updated_at: now,
   };
+
+  const supabase = getSupabaseClient();
 
   if (supabase) {
     try {
@@ -1003,6 +1068,8 @@ export async function recordPayment(input: RecordPaymentInput): Promise<PaymentR
 export async function getPayments(filters: PaymentFilterParams = {}): Promise<{ payments: PaymentRecord[]; total: number }> {
   const { customer_id, inquiry_id, status, method, page = 1, limit = 20 } = filters;
 
+  const supabase = getSupabaseClient();
+
   if (supabase) {
     try {
       let query = supabase.from("payments").select("*, customer:customers(id, name, company, email, phone), inquiry:leads(id, name, company, service)", { count: "exact" });
@@ -1046,6 +1113,7 @@ export async function getPayments(filters: PaymentFilterParams = {}): Promise<{ 
 }
 
 export async function getPaymentById(id: string): Promise<PaymentRecord | null> {
+  const supabase = getSupabaseClient();
   if (supabase) {
     try {
       const { data, error } = await supabase.from("payments").select("*, customer:customers(*), inquiry:leads(*)").eq("id", id).single();
@@ -1072,6 +1140,8 @@ export async function updatePayment(id: string, updates: Partial<PaymentRecord>)
     updated_at: new Date().toISOString(),
   };
 
+  const supabase = getSupabaseClient();
+
   if (supabase) {
     try {
       const { data, error } = await supabase.from("payments").update(updatedData).eq("id", id).select().single();
@@ -1096,6 +1166,7 @@ export async function updatePayment(id: string, updates: Partial<PaymentRecord>)
 // ----------------------------------------------------------------------------
 
 export async function getServices(): Promise<ServiceRecord[]> {
+  const supabase = getSupabaseClient();
   if (supabase) {
     try {
       const { data, error } = await supabase.from("services").select("*").order("name", { ascending: true });
@@ -1110,6 +1181,7 @@ export async function getServices(): Promise<ServiceRecord[]> {
 }
 
 export async function toggleServiceStatus(id: string, is_active: boolean): Promise<ServiceRecord | null> {
+  const supabase = getSupabaseClient();
   if (supabase) {
     try {
       const { data, error } = await supabase.from("services").update({ is_active, updated_at: new Date().toISOString() }).eq("id", id).select().single();
@@ -1202,6 +1274,7 @@ export async function getDashboardKPIs(dateRange: string = "all"): Promise<Dashb
 }
 
 export async function getActivityLogs(limit: number = 20): Promise<ActivityLogRecord[]> {
+  const supabase = getSupabaseClient();
   if (supabase) {
     try {
       const { data, error } = await supabase.from("activity_logs").select("*").order("created_at", { ascending: false }).limit(limit);
@@ -1289,6 +1362,7 @@ export async function globalSearch(queryStr: string): Promise<GlobalSearchResult
 // ----------------------------------------------------------------------------
 
 export async function getNotifications(limit: number = 20): Promise<CRMNotificationRecord[]> {
+  const supabase = getSupabaseClient();
   if (supabase) {
     try {
       const { data, error } = await supabase.from("crm_notifications").select("*").order("created_at", { ascending: false }).limit(limit);
@@ -1303,6 +1377,7 @@ export async function getNotifications(limit: number = 20): Promise<CRMNotificat
 }
 
 export async function markNotificationRead(id: string): Promise<boolean> {
+  const supabase = getSupabaseClient();
   if (supabase) {
     try {
       const { error } = await supabase.from("crm_notifications").update({ is_read: true }).eq("id", id);
@@ -1323,6 +1398,7 @@ export async function markNotificationRead(id: string): Promise<boolean> {
 }
 
 export async function getCRMSettings(): Promise<CRMSettingsRecord> {
+  const supabase = getSupabaseClient();
   if (supabase) {
     try {
       const { data, error } = await supabase.from("crm_settings").select("*").eq("id", "default").single();
@@ -1341,6 +1417,8 @@ export async function updateCRMSettings(updates: Partial<CRMSettingsRecord>): Pr
     ...updates,
     updated_at: new Date().toISOString(),
   };
+
+  const supabase = getSupabaseClient();
 
   if (supabase) {
     try {
@@ -1376,6 +1454,8 @@ export async function getLeadStats(): Promise<LeadStats> {
 export async function findLeadByPhone(rawPhone: string): Promise<InquiryRecord | null> {
   const cleanDigits = rawPhone.replace(/\D/g, "");
   const last10 = cleanDigits.slice(-10);
+
+  const supabase = getSupabaseClient();
 
   if (supabase) {
     try {

@@ -1,14 +1,17 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { videoManifest } from "@/config/videos";
 import { siteConfig } from "@/config/site";
 import { VanixLogo } from "@/components/ui/VanixLogo";
 import { GoldButton } from "@/components/ui/GoldButton";
 import { CinematicVideo } from "@/components/ui/CinematicVideo";
+import { GrowthJourneyModal } from "@/components/ui/GrowthJourneyModal";
 import { MessageCircle, Sparkles } from "lucide-react";
 
 export function FinalCTASection() {
+  const [isJourneyModalOpen, setIsJourneyModalOpen] = useState(false);
+
   return (
     <section
       id="final-cta"
@@ -57,7 +60,12 @@ export function FinalCTASection() {
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
-                <GoldButton href="#contact" size="lg" variant="primary" className="w-full sm:w-auto shadow-2xl">
+                <GoldButton
+                  onClick={() => setIsJourneyModalOpen(true)}
+                  size="lg"
+                  variant="primary"
+                  className="w-full sm:w-auto shadow-2xl"
+                >
                   LET&apos;S GROW YOUR BUSINESS
                 </GoldButton>
                 <a
@@ -74,6 +82,12 @@ export function FinalCTASection() {
           </div>
         </div>
       </div>
+
+      {/* Growth Journey Interactive Modal */}
+      <GrowthJourneyModal
+        isOpen={isJourneyModalOpen}
+        onClose={() => setIsJourneyModalOpen(false)}
+      />
     </section>
   );
 }

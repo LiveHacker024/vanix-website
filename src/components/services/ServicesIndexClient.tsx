@@ -3,9 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { servicesData, ServiceItem } from "@/config/services";
-import { SectionHeading } from "@/components/ui/SectionHeading";
-import { GoldButton } from "@/components/ui/GoldButton";
 import { ServiceInquiryModal } from "@/components/ui/ServiceInquiryModal";
+import { ServiceBookingModal } from "@/components/ui/ServiceBookingModal";
 import {
   Globe,
   ShoppingCart,
@@ -23,6 +22,8 @@ import {
   ShieldCheck,
   ArrowUpRight,
   Check,
+  Sparkles,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -52,10 +53,12 @@ const categories = [
   "STRATEGY",
 ] as const;
 
-export function ServicesSection() {
+export function ServicesIndexClient() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
-  const [selectedServiceForModal, setSelectedServiceForModal] = useState<string>("");
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
+  const [selectedServiceModal, setSelectedServiceModal] = useState<string>("");
+  const [selectedServiceForBooking, setSelectedServiceForBooking] = useState<ServiceItem>(servicesData[0]);
 
   const filteredServices = servicesData.filter((service) =>
     selectedCategory === "All" ? true : service.category === selectedCategory
@@ -64,29 +67,50 @@ export function ServicesSection() {
   const handleOpenInquiry = (serviceTitle: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setSelectedServiceForModal(serviceTitle);
+    setSelectedServiceModal(serviceTitle);
     setInquiryModalOpen(true);
   };
 
+  const handleOpenBooking = (service: ServiceItem, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedServiceForBooking(service);
+    setBookingModalOpen(true);
+  };
+
   return (
-    <section
-      id="services"
-      className="relative py-24 sm:py-32 bg-background overflow-hidden select-none border-b border-white/5"
-    >
-      {/* Ambient background glow */}
-      <div className="ambient-gold-glow top-1/3 left-1/2 -translate-x-1/2 opacity-20" />
+    <div className="relative pt-24 pb-24">
+      {/* Ambient Glow */}
+      <div className="ambient-gold-glow top-20 left-1/2 -translate-x-1/2 opacity-20" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <SectionHeading
-          tag="INTEGRATED DIGITAL SERVICES"
-          title="EVERYTHING YOUR BUSINESS NEEDS"
-          titleAccent="TO GROW ONLINE."
-          subtitle="VANIX does not offer disconnected tools. We deliver an integrated 14-pillar digital growth system engineered specifically for traditional and offline businesses."
-          align="center"
-          size="large"
-        />
+      {/* Breadcrumbs */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-6">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-text-muted">
+          <Link href="/" className="hover:text-gold transition-colors">
+            Home
+          </Link>
+          <span>/</span>
+          <span className="text-gold font-medium">Services</span>
+        </nav>
+      </div>
 
-        {/* Category Filters */}
+      {/* Hero Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 text-center">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gold/10 border border-gold/30 text-gold text-xs font-bold uppercase tracking-widest mb-6">
+          <Sparkles className="w-3.5 h-3.5 text-gold-bright" />
+          <span>INTEGRATED 14-PILLAR SUITE</span>
+        </div>
+
+        <h1 className="font-display font-black text-3xl sm:text-5xl md:text-6xl uppercase tracking-tight text-white max-w-4xl mx-auto leading-[1.1] mb-6">
+          Everything Your Business Needs{" "}
+          <span className="text-gradient-gold block sm:inline">To Scale Online</span>
+        </h1>
+
+        <p className="max-w-3xl mx-auto text-sm sm:text-base md:text-lg text-text-secondary leading-relaxed font-light mb-12">
+          VANIX delivers an interconnected growth ecosystem engineered specifically for traditional and offline businesses transitioning into dominant digital brands.
+        </p>
+
+        {/* Category Filter Pills */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
           {categories.map((cat) => (
             <button
@@ -104,17 +128,16 @@ export function ServicesSection() {
           ))}
         </div>
 
-        {/* 14-Service Clickable Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* 14 Services Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
           {filteredServices.map((service) => (
             <Link
               key={service.slug}
               href={`/services/${service.slug}`}
-              className="group relative rounded-xl p-6 bg-surface-2/80 backdrop-blur-md border border-white/10 hover:border-gold/50 transition-all duration-400 card-depth flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
-              aria-label={`View ${service.title} service details`}
+              className="group relative rounded-xl p-6 bg-surface-2/80 backdrop-blur-md border border-white/10 hover:border-gold/50 transition-all duration-300 card-depth flex flex-col justify-between"
             >
-              {/* Top Row: Number & Icon */}
               <div>
+                {/* Top Number & Icon */}
                 <div className="flex items-center justify-between mb-5">
                   <span className="font-display font-black text-2xl text-white/20 group-hover:text-gold transition-colors duration-300">
                     {service.number}
@@ -129,17 +152,17 @@ export function ServicesSection() {
                   {service.category}
                 </span>
 
-                {/* Service Title */}
-                <h3 className="font-display font-bold text-lg uppercase text-white tracking-wide group-hover:text-gold-bright transition-colors mb-2.5">
+                {/* Title */}
+                <h2 className="font-display font-bold text-lg uppercase text-white tracking-wide group-hover:text-gold-bright transition-colors mb-2.5">
                   {service.title}
-                </h3>
+                </h2>
 
-                {/* Short Description */}
+                {/* Description */}
                 <p className="text-xs sm:text-sm text-text-secondary font-light leading-relaxed mb-4">
                   {service.shortDescription}
                 </p>
 
-                {/* Deliverables checklist */}
+                {/* Deliverables Checklist */}
                 <div className="space-y-1.5 pt-3 border-t border-white/5">
                   {service.deliverables.slice(0, 4).map((item, idx) => (
                     <div key={idx} className="flex items-center gap-2 text-[11px] text-text-muted">
@@ -150,42 +173,50 @@ export function ServicesSection() {
                 </div>
               </div>
 
-              {/* Bottom Action */}
-              <div className="pt-6 mt-6 border-t border-white/5 flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gold group-hover:text-gold-bright">
-                  <span>View Details</span>
+              {/* Bottom Actions */}
+              <div className="pt-6 mt-6 border-t border-white/5 flex items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-gold group-hover:text-gold-bright">
+                  <span>Explore Details</span>
                   <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </span>
 
-                <button
-                  type="button"
-                  onClick={(e) => handleOpenInquiry(service.title, e)}
-                  className="text-[11px] font-bold uppercase tracking-wider text-text-muted hover:text-white px-2.5 py-1 rounded hover:bg-white/5 transition-colors"
-                >
-                  Quick Inquire
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={(e) => handleOpenBooking(service, e)}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider bg-gold/10 hover:bg-gold text-gold hover:text-black border border-gold/40 px-2.5 py-1 rounded transition-colors"
+                  >
+                    <Zap className="w-3 h-3" />
+                    <span>Book ₹999</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => handleOpenInquiry(service.title, e)}
+                    className="text-[11px] font-bold uppercase tracking-wider text-text-muted hover:text-white px-2 py-1 rounded hover:bg-white/5 transition-colors"
+                  >
+                    Inquire
+                  </button>
+                </div>
               </div>
             </Link>
           ))}
         </div>
-
-        {/* Bottom CTA Banner */}
-        <div className="mt-16 text-center">
-          <p className="text-sm text-text-secondary mb-4">
-            Need a custom combination tailored to your industry?
-          </p>
-          <GoldButton href="#contact" size="md" variant="primary">
-            REQUEST A CUSTOM GROWTH PROPOSAL
-          </GoldButton>
-        </div>
       </div>
 
-      {/* Service Inquiry Modal */}
+      {/* Inquiry Modal */}
       <ServiceInquiryModal
         isOpen={inquiryModalOpen}
         onClose={() => setInquiryModalOpen(false)}
-        initialService={selectedServiceForModal}
+        initialService={selectedServiceModal}
       />
-    </section>
+
+      {/* Service Booking Modal (₹999 Flow) */}
+      <ServiceBookingModal
+        isOpen={bookingModalOpen}
+        onClose={() => setBookingModalOpen(false)}
+        service={selectedServiceForBooking}
+      />
+    </div>
   );
 }

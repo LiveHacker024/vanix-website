@@ -50,3 +50,12 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# private documents, resumes, CVs & candidate assets
+*CV*
+*cv*
+*Resume*
+*resume*
+*.pdf
+/private/
+/docs/private/

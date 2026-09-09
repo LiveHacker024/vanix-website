@@ -11,6 +11,7 @@ import { ServicesSection } from "@/components/sections/ServicesSection";
 import { SystemArchitectureSection } from "@/components/sections/SystemArchitectureSection";
 import { ProcessSection } from "@/components/sections/ProcessSection";
 import { FounderSection } from "@/components/sections/FounderSection";
+import { TeamSection } from "@/components/sections/TeamSection";
 import { WhyVanixSection } from "@/components/sections/WhyVanixSection";
 import { FinalCTASection } from "@/components/sections/FinalCTASection";
 import { ContactSection } from "@/components/sections/ContactSection";
@@ -47,6 +48,9 @@ export default function HomePage() {
 
       {/* 07: About VANIX / Founder Section (founder.png) */}
       <FounderSection />
+
+      {/* 07.5: VANIX Expert Team Section */}
+      <TeamSection />
 
       {/* 08: Why VANIX (8 Differentiators) */}
       <WhyVanixSection />

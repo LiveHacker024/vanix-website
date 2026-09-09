@@ -102,7 +102,7 @@ export function Footer() {
               Navigation
             </h4>
             <ul className="flex flex-col gap-2.5 text-xs">
-              {siteConfig.navItems.slice(0, 6).map((item) => (
+              {siteConfig.navItems.slice(0, 8).map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}

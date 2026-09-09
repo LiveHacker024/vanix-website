@@ -36,6 +36,7 @@ export const siteConfig = {
     { label: "Growth Engine", href: "/#growth-system" },
     { label: "How It Works", href: "/#process" },
     { label: "About", href: "/#about" },
+    { label: "Team", href: "/#team" },
     { label: "Why VANIX", href: "/#why-vanix" },
     { label: "Contact", href: "/#contact" },
   ] as NavItem[],

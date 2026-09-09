@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const BASE_URL = 'http://localhost:3001';
-const EXPECTED_DOMAIN = 'https://vanix360.in';
+const EXPECTED_DOMAIN = 'https://www.vanix360.in';
 
 console.log("==================================================================");
 console.log("🌟 VANIX PRODUCTION LAUNCH READINESS AUDIT");

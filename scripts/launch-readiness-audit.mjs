@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const BASE_URL = 'http://localhost:3001';
-const EXPECTED_DOMAIN = 'https://vanix360.com';
+const EXPECTED_DOMAIN = 'https://vanix360.in';
 
 console.log("==================================================================");
 console.log("🌟 VANIX PRODUCTION LAUNCH READINESS AUDIT");
@@ -124,7 +124,7 @@ async function runLaunchAudit() {
     name: "Production Audit Customer",
     businessName: "Launch Readiness Enterprises",
     phone: "9876543210",
-    email: "audit@vanix360.com",
+    email: "audit@vanix360.in",
     serviceSlug: "website-development",
     location: "Mumbai",
     utr: `UTR${Date.now()}`,

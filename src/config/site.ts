@@ -3,7 +3,7 @@ export interface NavItem {
   href: string;
 }
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://vanix360.com";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://vanix360.in";
 
 export const siteConfig = {
   name: "VANIX",

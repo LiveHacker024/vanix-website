@@ -11,6 +11,7 @@ import {
   Mail,
   Phone,
   MapPin,
+  Shield,
 } from "lucide-react";
 import { LinkedinIcon, YoutubeIcon } from "@/components/ui/SocialIcons";
 
@@ -30,7 +31,7 @@ export function Footer() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8 mb-16">
-          {/* Col 1 & 2: Brand Info & Verified Contact Details */}
+          {/* Col 1: Brand Info & Verified Contact Details */}
           <div className="lg:col-span-2 flex flex-col gap-5">
             <VanixLogo size="md" showSubtitle={true} href="/" />
 
@@ -96,26 +97,51 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Col 3: Navigation */}
+          {/* Col 2: Navigation & Company */}
           <div className="flex flex-col gap-4">
             <h4 className="font-display font-bold text-xs uppercase tracking-widest text-gold">
-              Navigation
+              Company
             </h4>
-            <ul className="flex flex-col gap-2.5 text-xs">
-              {siteConfig.navItems.slice(0, 8).map((item) => (
-                <li key={item.label}>
-                  <Link
-                    href={item.href}
-                    className="text-text-secondary hover:text-white transition-colors duration-200"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
+            <ul className="flex flex-col gap-2.5 text-xs text-text-secondary">
+              <li>
+                <Link href="/" className="hover:text-white transition-colors">
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="hover:text-white transition-colors">
+                  About VANIX
+                </Link>
+              </li>
+              <li>
+                <Link href="/services" className="hover:text-white transition-colors">
+                  All Services
+                </Link>
+              </li>
+              <li>
+                <Link href="/blog" className="hover:text-white transition-colors">
+                  Blog / Resources
+                </Link>
+              </li>
+              <li>
+                <Link href="/faq" className="hover:text-white transition-colors">
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:text-white transition-colors">
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link href="/sitemap" className="hover:text-white transition-colors">
+                  Sitemap
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Col 4: Solutions */}
+          {/* Col 3: Growth Solutions */}
           <div className="flex flex-col gap-4">
             <h4 className="font-display font-bold text-xs uppercase tracking-widest text-gold">
               Growth Engine
@@ -132,13 +158,18 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/services/google-business-profile" className="hover:text-white transition-colors">
+                  Google Maps 3-Pack SEO
+                </Link>
+              </li>
+              <li>
                 <Link href="/services/amazon-meesho-indiamart" className="hover:text-white transition-colors">
                   Amazon & IndiaMART
                 </Link>
               </li>
               <li>
-                <Link href="/services/google-business-profile" className="hover:text-white transition-colors">
-                  Google Maps 3-Pack SEO
+                <Link href="/services/google-ads-search-pmax" className="hover:text-white transition-colors">
+                  Google Search Ads
                 </Link>
               </li>
               <li>
@@ -148,30 +179,50 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/services/analytics-growth-reporting" className="hover:text-white transition-colors">
-                  Analytics & Scaling
+                  Analytics & Reporting
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Col 5: Direct Action */}
+          {/* Col 4: Trust, Legal & Direct Action */}
           <div className="flex flex-col gap-4">
             <h4 className="font-display font-bold text-xs uppercase tracking-widest text-gold">
-              Direct Strategy
+              Trust & Legal
             </h4>
-            <p className="text-xs text-text-muted leading-relaxed">
-              Speak directly with our team regarding your digital expansion roadmap.
-            </p>
-            <a
-              href={siteConfig.links.whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-sm bg-surface-2 hover:bg-surface-3 border border-gold/40 text-xs font-bold uppercase tracking-wider text-gold hover:text-white transition-all duration-300"
-            >
-              <MessageCircle className="w-4 h-4 text-gold" />
-              <span>CHAT WITH VANIX</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </a>
+            <ul className="flex flex-col gap-2.5 text-xs text-text-secondary">
+              <li>
+                <Link href="/privacy-policy" className="hover:text-white transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms-and-conditions" className="hover:text-white transition-colors">
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link href="/disclaimer" className="hover:text-white transition-colors">
+                  Legal Disclaimer
+                </Link>
+              </li>
+            </ul>
+
+            <div className="pt-4 flex flex-col gap-2.5">
+              <span className="text-[11px] text-text-muted font-light">
+                Need immediate strategy guidance?
+              </span>
+              <a
+                href={siteConfig.links.whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-sm bg-surface-2 hover:bg-surface-3 border border-gold/40 text-[11px] font-bold uppercase tracking-wider text-gold hover:text-white transition-all duration-300"
+              >
+                <MessageCircle className="w-3.5 h-3.5 text-gold" />
+                <span>Chat on WhatsApp</span>
+                <ArrowUpRight className="w-3 h-3" />
+              </a>
+            </div>
           </div>
         </div>
 
@@ -180,6 +231,21 @@ export function Footer() {
           <p className="text-xs text-text-muted">
             © {currentYear} {siteConfig.legalName}. All rights reserved.
           </p>
+
+          <div className="flex items-center gap-6 text-xs text-text-muted">
+            <Link href="/privacy-policy" className="hover:text-gold transition-colors">
+              Privacy
+            </Link>
+            <Link href="/terms-and-conditions" className="hover:text-gold transition-colors">
+              Terms
+            </Link>
+            <Link href="/disclaimer" className="hover:text-gold transition-colors">
+              Disclaimer
+            </Link>
+            <Link href="/sitemap" className="hover:text-gold transition-colors">
+              Sitemap
+            </Link>
+          </div>
 
           <button
             type="button"

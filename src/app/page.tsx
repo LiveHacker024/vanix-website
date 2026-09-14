@@ -13,6 +13,7 @@ import { ProcessSection } from "@/components/sections/ProcessSection";
 import { FounderSection } from "@/components/sections/FounderSection";
 import { TeamSection } from "@/components/sections/TeamSection";
 import { WhyVanixSection } from "@/components/sections/WhyVanixSection";
+import { GoogleTrustSection } from "@/components/trust/GoogleTrustSection";
 import { FinalCTASection } from "@/components/sections/FinalCTASection";
 import { ContactSection } from "@/components/sections/ContactSection";
 
@@ -54,6 +55,9 @@ export default function HomePage() {
 
       {/* 08: Why VANIX (8 Differentiators) */}
       <WhyVanixSection />
+
+      {/* 08.5: Google Trust & Verified Customer Confidence */}
+      <GoogleTrustSection />
 
       {/* 09: Final Cinematic Grand CTA (Animation 13) */}
       <FinalCTASection />

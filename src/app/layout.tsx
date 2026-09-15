@@ -151,6 +151,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${jakarta.variable} ${outfit.variable} dark scroll-smooth`}>
       <head>
+        <meta name="google-adsense-account" content="ca-pub-4302057692753259" />
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4302057692753259"

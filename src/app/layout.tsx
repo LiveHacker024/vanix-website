@@ -152,6 +152,11 @@ export default function RootLayout({
     <html lang="en" className={`${jakarta.variable} ${outfit.variable} dark scroll-smooth`}>
       <head>
         <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4302057692753259"
+          crossOrigin="anonymous"
+        />
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />

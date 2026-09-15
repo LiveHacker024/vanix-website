@@ -38,21 +38,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  async redirects() {
-    return [
-      {
-        source: "/:path*",
-        has: [
-          {
-            type: "host",
-            value: "vanix360.in",
-          },
-        ],
-        destination: "https://www.vanix360.in/:path*",
-        permanent: true,
-      },
-    ];
-  },
 };
 
 export default nextConfig;
